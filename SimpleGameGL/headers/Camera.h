@@ -16,6 +16,9 @@ public:
 	glm::mat4 GetView() const;
 	float GetFov() const;
 
+	float defaultSpeed = 20.0f;
+	float currentSpeed, verticalSpeed;
+
 
 private:
 

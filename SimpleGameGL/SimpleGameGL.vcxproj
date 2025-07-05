@@ -136,6 +136,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="source\Shader.cpp" />
     <ClCompile Include="source\Texture.cpp" />
+    <ClCompile Include="source\TextureArray.cpp" />
     <ClCompile Include="vendor\glad.c" />
     <ClCompile Include="source\VertexBuffer.cpp" />
     <ClCompile Include="source\VertexArray.cpp" />
@@ -145,12 +146,14 @@
     <ClInclude Include="headers\BlockFaceData.h" />
     <ClInclude Include="headers\Chunk.h" />
     <ClInclude Include="headers\Camera.h" />
+    <ClInclude Include="headers\FPS.h" />
     <ClInclude Include="headers\IndexBuffer.h" />
     <ClInclude Include="headers\Texture.h" />
     <ClInclude Include="headers\VertexBuffer.h" />
     <ClInclude Include="headers\Shader.h" />
     <ClInclude Include="headers\VertexArray.h" />
     <ClInclude Include="headers\VertexBufferLayout.h" />
+    <ClInclude Include="headers\TextureArray.h" />
     <ClInclude Include="vendor\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
@@ -158,9 +161,9 @@
     <None Include="shaders\Vertex.vert" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="resources\textures\blocks\dirt.png" />
     <Image Include="resources\textures\dumb.jpg" />
-    <Image Include="resources\textures\dumb.png" />
-    <Image Include="resources\textures\Not working.jpg" />
+    <Image Include="resources\textures\blocks\grass.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

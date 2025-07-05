@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
@@ -13,12 +14,16 @@
 #include "headers/Camera.h"
 #include "headers/Texture.h"
 #include "headers/Chunk.h"
-
+#include "headers/FPS.h"
+#include "headers/TextureArray.h"
 
 Camera camera;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+const unsigned int WindowX = 1200;
+const unsigned int WindowY = 800;
 
 //callback function for when the user resizes the window
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -46,9 +51,8 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-
 	//create window object
-	GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(WindowX, WindowY, "LearnOpenGL", NULL, NULL);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	if (window == NULL)
 	{
@@ -66,73 +70,57 @@ int main() {
 	}
 
 	//veiwport: so OpenGL knows how we want to display the data and coordinates with respect to the window 
-	glViewport(0, 0, 800, 600);
+	glViewport(0, 0, WindowX, WindowY);
 	//lets openGL know that this is the name of the callback funciton
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	std::vector<float> vertices = {
-		// Back face (z = -0.5)
-		-0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f,// 0
-		 0.5f, -0.5f, -0.5f,   0.0f, 1.0f, 0.0f, 1.0f,  1.0f, 0.0f,// 1
-		 0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 1.0f, 1.0f,  1.0f, 1.0f,// 2
-		-0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 0.0f, 1.0f,  0.0f, 1.0f,// 3
-		// Front face (z = 0.5)
-		-0.5f, -0.5f,  0.5f,   1.0f, 0.0f, 1.0f, 1.0f,  0.0f, 0.0f,// 4
-		 0.5f, -0.5f,  0.5f,   0.0f, 1.0f, 1.0f, 1.0f,  1.0f, 0.0f,// 5
-		 0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 1.0f, 1.0f,  1.0f, 1.0f,// 6
-		-0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 1.0f,  0.0f, 1.0f // 7
-	};
+	FPS Fps;
 
-	Texture t0("resources/textures/dumb.png", "png");
-
-	VertexBuffer VB(vertices);
-	VertexBufferLayout layout;
-	layout.Push<float>(3);
-	layout.Push<float>(4);
-	layout.Push<float>(2);
-	VertexArray VA;
-
-	IndexBuffer IB(1);
-	IB.Bind();
-
-	VA.AddBuffer(VB, layout);
-	VB.UnBind();
+	//Texture t0("resources/textures/blocks/dirt.png", "png");
+	TextureArray ta("resources/textures/blocks");
 
 	Shader shader("shaders/Vertex.vert", "shaders/Fragment.frag");
 	shader.Use();
-	shader.setInt("ourTexture", 0);
 
-	Chunk c1;
+	Chunk c1(40, 0);
+	Chunk c2(0, 0);
 	c1.GenerateMesh();
+	c2.GenerateMesh();
 
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
 		glfwSetCursorPosCallback(window, mouse_callback);
 
 		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+
 		glClearColor(0.0f, 0.2f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		float currentTime = glfwGetTime();
 		deltaTime = currentTime - lastFrame;
 		lastFrame = currentTime;
+		Fps.Update();
 
 		shader.Use();
+		ta.Bind(shader);
 
 		camera.Render();
 		shader.setMat4f("view", camera.GetView());
 
-		glm::mat4 projection = glm::perspective(glm::radians(camera.GetFov()), 800.0f / 600.0f, 0.1f, 100.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(camera.GetFov()), static_cast<float>(WindowX) / static_cast<float>(WindowY), 0.1f, 1000.0f);
 		shader.setMat4f("projection", projection);
 
 		glm::mat4 model = glm::mat4(1.0f);
 		shader.setMat4f("model", model);
 
-		t0.Bind(0);
-		VA.Bind();
-		IB.Bind();
+		c1.Draw();
+		c2.Draw();
 
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+		GLenum err;
+		while ((err = glGetError()) != GL_NO_ERROR) {
+			std::cerr << "OpenGL error: " << err << std::endl;
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

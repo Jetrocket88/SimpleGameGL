@@ -45,6 +45,9 @@
     <ClCompile Include="source\Chunk.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\TextureArray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\VertexBuffer.h">
@@ -77,6 +80,12 @@
     <ClInclude Include="headers\BlockFaceData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="headers\FPS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\TextureArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\Vertex.vert" />
@@ -86,10 +95,10 @@
     <Image Include="resources\textures\dumb.jpg">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="resources\textures\Not working.jpg">
+    <Image Include="resources\textures\blocks\grass.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="resources\textures\dumb.png">
+    <Image Include="resources\textures\blocks\dirt.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

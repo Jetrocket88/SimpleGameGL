@@ -9,21 +9,16 @@ class IndexBuffer
 {
 public:
 
-	IndexBuffer(unsigned int numCubes);
+	IndexBuffer(unsigned int numFaces);
 
 	void Bind() const;
 	void UnBind() const;
 
-	const unsigned int baseCubeIndices[36] = {
-		0, 1, 2, 2, 3, 0, // Back face
-		4, 5, 6, 6, 7, 4, // Front face
-		4, 5, 1, 1, 0, 4, // Bottom face
-		7, 6, 2, 2, 3, 7, // Top face
-		4, 0, 3, 3, 7, 4, // Left face
-		5, 1, 2, 2, 6, 5  // Right face
+	const unsigned int baseFaceIndices[6] = {
+		0, 1, 2, 2, 3, 0
 	};
 
-	void generateData(const unsigned int numCubes);
+	void generateData(const unsigned int numFaces);
 
 private:
 	std::vector<unsigned int> vecData;

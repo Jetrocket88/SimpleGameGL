@@ -1,8 +1,8 @@
 #include "../headers/IndexBuffer.h"
 
-IndexBuffer::IndexBuffer(unsigned int numCubes)
+IndexBuffer::IndexBuffer(unsigned int numFaces)
 {
-	generateData(numCubes);
+	generateData(numFaces);
 	glGenBuffers(1, &ID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ID);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, vecData.size() * sizeof(unsigned int), vecData.data(), GL_STATIC_DRAW);
@@ -18,14 +18,13 @@ void IndexBuffer::UnBind() const
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void IndexBuffer::generateData(const unsigned int numCubes)
+void IndexBuffer::generateData(const unsigned int numFaces)
 {
 	vecData.clear();
-	vecData.reserve(numCubes * 36);
-	for (unsigned int i = 0; i < numCubes; i++) {
-		for (unsigned int j = 0; j < 36; j++) {
-			vecData.push_back(baseCubeIndices[j] + (8 * i));
+	vecData.reserve(numFaces * 6);
+	for (unsigned int i = 0; i < numFaces; i++) {
+		for (unsigned int j = 0; j < 6; j++) {
+			vecData.push_back(baseFaceIndices[j] + i * 4);
 		}
 	}
 }
-

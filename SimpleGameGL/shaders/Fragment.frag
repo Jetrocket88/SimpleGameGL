@@ -1,12 +1,12 @@
 #version 330 core
 out vec4 FragColor;
 
-in vec4 glColor;
 in vec2 TexCoord;
+flat in int TexLayer;
 
-uniform sampler2D ourTexture;
+uniform sampler2DArray uTextureArray;
 
 void main()
 {
-    FragColor = glColor * texture(ourTexture, TexCoord);
+    FragColor = texture(uTextureArray, vec3(TexCoord, TexLayer));
 } 

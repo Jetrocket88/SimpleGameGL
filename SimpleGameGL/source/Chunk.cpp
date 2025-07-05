@@ -1,10 +1,9 @@
 #include "../headers/Chunk.h"
 
-extern const float blockVertexTemplate[]; // 6 faces * 4 vertices * 5 floats
-
-Chunk::Chunk()
-	: IB(nullptr), VB(nullptr)
+Chunk::Chunk(int x, int z)
+	: IB(nullptr), VB(nullptr), layout(nullptr), m_OriginX(x), m_OriginZ(z)
 {
+	initialiseBlocks();
 }
 
 Chunk::~Chunk() {
@@ -13,27 +12,22 @@ Chunk::~Chunk() {
 
 void Chunk::GenerateMesh()
 {
-	int count = 0;
+	int temp = 0;
 	vertexData.clear();
 	for (unsigned int i = 0; i < 16; i++) {
 		for (unsigned int j = 0; j < 16; j++) {
 			for (unsigned int k = 0; k < 256; k++) {
-				if (blocks[i][j][k].type != BlockType::Air && checkNeighbours(i, j, k)) {
-					// Each face: 4 vertices, each vertex: 5 floats (x, y, z, u, v)
-					for (int face = 0; face < 6; ++face) {
-						for (int vert = 0; vert < 4; ++vert) {
-							int idx = (face * 4 + vert) * 5;
-							// Offset the position floats (x, y, z)
-							float x = blockVertexTemplate[idx + 0] + static_cast<float>(i);
-							float y = blockVertexTemplate[idx + 1] + static_cast<float>(j);
-							float z = blockVertexTemplate[idx + 2] + static_cast<float>(k);
-							float u = blockVertexTemplate[idx + 3];
-							float v = blockVertexTemplate[idx + 4];
-							vertexData.push_back(x);
-							vertexData.push_back(y);
-							vertexData.push_back(z);
-							vertexData.push_back(u);
-							vertexData.push_back(v);
+				if (blocks[i][j][k].type != BlockType::Air) {
+					for (int face = 0; face < 6; face++) {
+						if (isFaceVisible(i, j, k, face)) {
+							for (const Vertex& v : blockVertexTemplate[face]) {
+								vertexData.push_back(static_cast<float>(i) + static_cast<float>(m_OriginX) + v.x);
+								vertexData.push_back(static_cast<float>(k) + v.y);
+								vertexData.push_back(static_cast<float>(j) + static_cast<float>(m_OriginZ) + v.z);
+								vertexData.push_back(v.u);
+								vertexData.push_back(v.v);
+								vertexData.push_back(static_cast<float>(blocks[i][j][k].type));
+							}
 							count++;
 						}
 					}
@@ -46,8 +40,9 @@ void Chunk::GenerateMesh()
 	VA = VertexArray();
 
 	layout = new VertexBufferLayout();
-	layout->Push<float>(3);
-	layout->Push<float>(2);
+	layout->Push<float>(3); //coordinates
+	layout->Push<float>(2); //tex coords
+	layout->Push<float>(1); //tex layer
 
 
 	IB->Bind();
@@ -56,29 +51,46 @@ void Chunk::GenerateMesh()
 	VB->UnBind();
 }
 
-void Chunk::Draw()
+void Chunk::Draw() const
 {
 	VA.Bind();
 	IB->Bind();
 
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+	glDrawElements(GL_TRIANGLES, 6 * count, GL_UNSIGNED_INT, nullptr);
 }
 
-bool Chunk::checkNeighbours(unsigned int i, unsigned int j, unsigned int k)
+bool Chunk::isFaceVisible(unsigned int i, unsigned int j, unsigned int k, unsigned int face) const
 {
-	std::vector<std::vector<unsigned int>> adjCoords =
-	{ {i, j, k + 1}, {i, j, k - 1}, {i, j + 1, k}, {i, j - 1, k}, {i + 1, j, k}, {i - 1, j, k}, };
-	for (const auto coord : adjCoords) {
-		if ((coord[0] > 16 || coord[0] < 0) || (coord[1] > 16 || coord[1] < 0) || (coord[2] > 256 || coord[2] < 0)) {
-			//if any of these are true, then one of then they are out of bounds so we need to continue
-			continue;
-		}
-		else {
-			if (blocks[coord[0]][coord[1]][coord[2]].type == BlockType::Air) {
-				return true;
-				//if it returns true that means we need to draw it because it can be seen
+	int nx = i, ny = k, nz = j;
+	switch (face)
+	{
+	case 0: nz--; break;//back face
+	case 1: nz++; break;//front face
+	case 2: ny--; break;//bottom face
+	case 3: ny++; break;//top face
+	case 4: nx--; break;//left face
+	case 5: nx++; break;//right face
+	}
+	if (nx < 0 || nx >= 16 || nz < 0 || nz >= 16 || ny < 0 || ny >= 256) {
+		return true; //face at chunk boundary is visible 
+	}
+	return blocks[nx][nz][ny].type == BlockType::Air;
+}
+
+void Chunk::initialiseBlocks()
+{
+	int temp = 0;
+	for (int i = 0; i < 16; i++) {
+		for (int j = 0; j < 16; j++) {
+			for (int k = 0; k < 256; k++) {
+				if (temp % 2 == 0) {
+					blocks[i][j][k].type = BlockType::Grass;
+				}
+				else {
+					blocks[i][j][k].type = BlockType::Dirt;
+				}
+				temp++;
 			}
 		}
 	}
-	return false;
 }
